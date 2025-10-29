@@ -33,4 +33,3 @@ elif pdn_value > 50 and pdn_value < 80:
 else:
     print("У вас высокая долговая нагрузка. ")
 
-    
