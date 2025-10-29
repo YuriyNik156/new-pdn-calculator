@@ -24,7 +24,8 @@ def calculate_pdn(monthly_income: float, monthly_payments: list[float]) -> float
 
 @app.get("/", response_class=HTMLResponse)
 async def form_page(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "result": None})
+    print("✅ Загружена новая версия сервиса!")
+    return templates.TemplateResponse("index.html", {"request": request, "result": None, "status": None})
 
 
 @app.post("/", response_class=HTMLResponse)
@@ -39,11 +40,11 @@ async def calculate_pdn_form(
 
         # Интерпретация результата
         if pdn_value < 50:
-            print("У вас низкий уровень долговой нагрузки.")
-        elif pdn_value > 50 and pdn_value < 80:
-            print("Ваш уровень долговой нагрузки - средний.")
+            status = "✅ У вас низкий уровень долговой нагрузки."
+        elif pdn_value < 80:
+            status = "⚖️ Уровень долговой нагрузки — средний."
         else:
-            print("У вас высокая долговая нагрузка. ")
+            status = "⚠️ У вас высокая долговая нагрузка. Стоит пересмотреть кредиты."
 
         return templates.TemplateResponse(
             "index.html",
