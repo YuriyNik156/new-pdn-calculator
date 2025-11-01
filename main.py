@@ -1,7 +1,13 @@
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from typing import Dict, Optional
+
+import os
+import json
+import pandas as pd
+import requests
 
 app = FastAPI()
 
@@ -9,6 +15,10 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Путь для локального кэша/файла с регионами
+DATA_DIR = "data"
+os.makedirs(DATA_DIR, exist_ok=True)
+LOCAL_JSON = os.path.join(DATA_DIR, "regions_wages.json")
 
 def calculate_pdn(monthly_income: float, monthly_payments: list[float]) -> float:
     """
