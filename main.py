@@ -93,21 +93,28 @@ def load_regions_data() -> Dict[str, float]:
     # 1. Пробуем загрузить Excel
     if os.path.exists(excel_path):
         try:
-            df = pd.read_excel(excel_path)
-            possible_region_cols = [
-                c for c in df.columns if any(k in str(c).lower() for k in ["регион", "субъект", "обл"])
-            ]
-            possible_wage_cols = [
-                c for c in df.columns if any(k in str(c).lower() for k in ["зараб", "зарплат", "руб"])
-            ]
-            region_col = possible_region_cols[0] if possible_region_cols else df.columns[0]
-            wage_col = possible_wage_cols[0] if possible_wage_cols else df.columns[1]
+            # Данные начинаются с первой строки, но первый ряд — это месяцы
+            df = pd.read_excel(excel_path, header=1)
+
+            # Названия колонок
+            region_col = df.columns[0]  # 'Unnamed: 0'
+
+            # Попробуем найти июль, если он есть
+            wage_col = None
+            for c in df.columns:
+                if "июль" in str(c).lower():
+                    wage_col = c
+                    break
+
+            # Если нет колонки "июль" (вдруг изменится структура), берем последнюю
+            if wage_col is None:
+                wage_col = df.columns[-1]
 
             result = {}
             for _, row in df.iterrows():
                 region = str(row[region_col]).strip()
                 wage = row[wage_col]
-                if pd.isna(wage):
+                if pd.isna(region) or pd.isna(wage):
                     continue
                 try:
                     wage_value = float(str(wage).replace(" ", "").replace(",", "."))
@@ -117,8 +124,10 @@ def load_regions_data() -> Dict[str, float]:
                     continue
 
             if result:
+                print(f"✅ Загружено из Excel: {len(result)} регионов ({wage_col})")
                 save_local(result)
                 return result
+
         except Exception as e:
             print(f"⚠️ Ошибка при чтении Excel: {e}")
 
